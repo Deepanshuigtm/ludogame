@@ -1,0 +1,52 @@
+# Render Blueprint – deploys this server when THIS folder is the root of its own Git repo.
+# Render dashboard → New → Blueprint → pick this repo. You'll be asked for every value marked `sync: false`.
+services:
+  - type: web
+    name: ludo-classic-server
+    runtime: node
+    plan: free                 # free instances sleep after ~15 min idle; use "starter" for an always-on server
+    region: singapore          # closest Render region to India
+    numInstances: 1            # game tables live in memory: keep exactly ONE instance
+    buildCommand: npm ci --omit=dev
+    startCommand: node src/server.js
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: LOG_LEVEL
+        value: info
+      # MongoDB Atlas connection string (Atlas → Network Access must allow 0.0.0.0/0: Render has no fixed IPs on free).
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: ludogame
+      # Firebase Admin key: either paste `base64 -i service-account.json | tr -d '\n'` here, or leave it empty and add a
+      # Secret File named service-account.json (Environment → Secret Files) – the server reads /etc/secrets/ too.
+      - key: FIREBASE_SERVICE_ACCOUNT_BASE64
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        value: voice-chat-56647
+      # Invite emails (optional – leave SMTP_HOST empty to send push notifications only)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "465"
+      - key: SMTP_SECURE
+        value: "true"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: APP_DEEP_LINK
+        value: https://play.google.com/store/apps/details?id=com.ludoclassic
+      - key: INVITE_TTL_SECONDS
+        value: "600"
+      - key: TURN_TIMEOUT_SECONDS
+        value: "25"
+      - key: RECONNECT_GRACE_SECONDS
+        value: "60"
